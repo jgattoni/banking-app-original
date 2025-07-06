@@ -1,10 +1,15 @@
-import React from 'react'
+import { currentUser } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
 import HeaderBox from "@/components/HeaderBox";
 import TotalBalanceBox from "@/components/TotalBalanceBox";
 import RightSidebar from "@/components/RightSidebar";
 
-const Home = () => {
-    const loggedIn = { firstName: 'Julien', lastName: 'Gattoni', email: 'julien.gattoni@gmail.com' }
+const Home = async () => {
+    const user = await currentUser();
+    if (!user) {
+        redirect("/sign-in");
+    }
+
     return (
         <section className="home">
             <div className="home-content">
@@ -12,7 +17,7 @@ const Home = () => {
                     <HeaderBox
                       type="greeting"
                       title="Welcome"
-                      user={loggedIn.firstName || 'Guest'}
+                      user={user.firstName || 'Guest'}
                       subtext={"Access and manage your account and transactions efficiently."}
                     />
                     <TotalBalanceBox
@@ -24,7 +29,11 @@ const Home = () => {
                 RECENT TRANSACTIONS
             </div>
             <RightSidebar
-                user={loggedIn}
+                user={{
+                    firstName: user.firstName,
+                    lastName: user.lastName,
+                    email: user.emailAddresses?.[0]?.emailAddress || "",
+                }}
                 transactions={[]}
                 banks={[{ currentBalance: 123.50},{currentBalance: 500.00}]}
             />

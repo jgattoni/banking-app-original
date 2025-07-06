@@ -4,8 +4,10 @@ import Image from "next/image"
 import {sidebarLinks} from "@/constants";
 import {cn} from "@/lib/utils";
 import {usePathname} from "next/navigation";
+import { UserButton, SignInButton, SignedOut } from "@clerk/nextjs";
+import { useUser } from "@clerk/nextjs";
 
-const Sidebar = ({ user }: SidebarProps) => {
+const Sidebar = () => {
     const pathname = usePathname();
 
     return (
@@ -21,7 +23,9 @@ const Sidebar = ({ user }: SidebarProps) => {
                     />
                     <h1 className={"sidebar-logo"}>Horizon</h1>
                 </Link>
-
+                <div className={"flex-center hidden md:flex"}>
+                    <UserButton />
+                </div>
                 {sidebarLinks.map((item) => {
                     const isActive = pathname === item.route || pathname.startsWith('$(item.route)/');
                     return (
@@ -41,9 +45,10 @@ const Sidebar = ({ user }: SidebarProps) => {
                         </Link>
                     )
                 })}
-                USER
             </nav>
-            FOOTER
+            <SignedOut>
+                <SignInButton />
+            </SignedOut>
         </section>
         )
 }

@@ -1,6 +1,9 @@
 import Link from "next/link";
 import Image from "next/image";
 import BankCard from "@/components/BankCard";
+import {
+  UserButton,
+} from '@clerk/nextjs'
 
 const RightSidebar = ({user, transactions, banks}:
 RightSidebarProps) => {
@@ -10,7 +13,14 @@ RightSidebarProps) => {
                 <div className={"profile-banner"}/>
                 <div className={"profile"}>
                     <div className={"profile-img"}>
-                        <span className={"text-5xl font-bold text-blue-500"}>{user.firstName[0]}</span>
+                        <UserButton appearance={{
+                            elements: {
+                                userButtonAvatarBox: {
+                                    width: "72px",
+                                    height: "72px"
+                                }
+                            },
+                          }}/>
                     </div>
                     <div className={"profile-details"}>
                         <h1 className={"profile-name"}>{user.firstName} {user.lastName}</h1>

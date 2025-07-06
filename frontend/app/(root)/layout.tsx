@@ -1,17 +1,16 @@
 import Sidebar from "@/components/Sidebar";
 import MobileNav from "@/components/MobileNav";
 import Image from "next/image";
+import { UserButton } from "@clerk/nextjs";
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const loggedIn = {firstName: 'Julien', LastName: 'Gattoni'};
-  
   return (
     <main className="flex h-screen w-full font-inter">
-        <Sidebar user={loggedIn} />
+        <Sidebar />
         <div className="flex size-full flex-col">
           <div className="root-layout">
             <Image
@@ -20,8 +19,9 @@ export default function RootLayout({
                 height="30"
                 alt={"logo"}
             />
-              <div>
-                  <MobileNav user={loggedIn} />
+              <div className={"flex items-center gap-3"}>
+                  <UserButton />
+                  <MobileNav  />
               </div>
           </div>
         {children}
@@ -29,3 +29,4 @@ export default function RootLayout({
     </main>
   );
 }
+
