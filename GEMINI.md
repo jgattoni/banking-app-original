@@ -14,6 +14,7 @@ The project is a monorepo with a `frontend` and `backend` directory.
 The frontend is a Next.js application built with TypeScript.
 
 - **Framework**: [Next.js](https://nextjs.org/) (using the App Router)
+- **Authentication**: [Clerk](https://clerk.com/)
 - **Styling**: [Tailwind CSS](https://tailwindcss.com/)
 - **UI Components**: [Shadcn/ui](https://ui.shadcn.com/) and [Radix UI](https://www.radix-ui.com/)
 - **Charting**: [Chart.js](https://www.chartjs.org/)
