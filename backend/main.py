@@ -3,8 +3,14 @@ import os
 from fastapi import FastAPI, Request, HTTPException
 from supabase import create_client, Client
 from dotenv import load_dotenv
+import sentry_sdk
 
 load_dotenv()
+
+sentry_sdk.init(
+    dsn=os.environ.get("SENTRY_DSN"),
+    traces_sample_rate=1.0,
+)
 
 app = FastAPI()
 
@@ -12,6 +18,9 @@ supabase_url = os.environ.get("SUPABASE_URL")
 supabase_key = os.environ.get("SUPABASE_KEY")
 supabase: Client = create_client(supabase_url, supabase_key)
 
+@app.get("/sentry-debug")
+async def trigger_error():
+    division_by_zero = 1 / 0
 @app.get("/")
 def read_root():
     return {"Hello": "World"}
