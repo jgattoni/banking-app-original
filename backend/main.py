@@ -36,8 +36,7 @@ async def user_webhook(request: Request):
                 "last_name": last_name
             }).execute()
 
-            if response.error:
-                raise HTTPException(status_code=400, detail=response.error.message)
+            
 
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
