@@ -7,9 +7,11 @@ This document provides an overview of the project structure, technologies used, 
 The project is a monorepo with a `frontend` and `backend` directory.
 
 - **`frontend/`**: Contains the Next.js web application.
-- **`backend/`**: Will contain the FastAPI backend (currently empty).
+- **`backend/`**: Contains the FastAPI backend.
 
-## Frontend
+## Technologies Used
+
+### Frontend
 
 The frontend is a Next.js application built with TypeScript.
 
@@ -19,8 +21,9 @@ The frontend is a Next.js application built with TypeScript.
 - **UI Components**: [Shadcn/ui](https://ui.shadcn.com/) and [Radix UI](https://www.radix-ui.com/)
 - **Charting**: [Chart.js](https://www.chartjs.org/)
 - **Linting**: ESLint
+- **Error Tracking**: [Sentry](https://sentry.io/)
 
-### Key Frontend Directories
+#### Key Frontend Directories
 
 - **`app/`**: Contains the pages and layouts of the application, following the Next.js App Router conventions.
   - **`(auth)/`**: Authentication-related pages (sign-in, sign-up).
@@ -31,12 +34,16 @@ The frontend is a Next.js application built with TypeScript.
   - **`actions/`**: Server-side actions for interacting with the backend and external services.
 - **`public/`**: Static assets like images and icons.
 
-## Backend
+### Backend
 
-The backend will be a Python application using the [FastAPI](https://fastapi.tiangolo.com/) framework. Development has not yet started.
+The backend is a Python application.
+
+- **Framework**: [FastAPI](https://fastapi.tiangolo.com/)
+- **Database/Auth**: [Supabase](https://supabase.io/)
+- **Error Tracking**: [Sentry](https://sentry.io/)
 
 ## Development Workflow
 
 1.  **Frontend**: Run `npm run dev` in the `frontend` directory to start the Next.js development server.
-2.  **Backend**: Once implemented, the FastAPI server will be run from the `backend` directory.
+2.  **Backend**: The FastAPI server will be run from the `backend` directory.
 3.  **Commits**: Follow conventional commit standards for commit messages.
