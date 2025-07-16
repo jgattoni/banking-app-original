@@ -19,28 +19,21 @@ node_modules/
 !.yarn/releases
 !.yarn/versions
 
-# testing
-coverage/
-
-# next.js
-.next/
-out/
-
-# production
-build/
-
 # debug
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
+# Frontend specific ignores
+frontend/coverage/
+frontend/.next/
+frontend/out/
+frontend/build/
+frontend/*.tsbuildinfo
+frontend/next-env.d.ts
+frontend/.env.local
+frontend/.env.sentry-build-plugin
 
-# vercel
+# Vercel
 .vercel/
-
-# typescript
-*.tsbuildinfo
-next-env.d.ts
