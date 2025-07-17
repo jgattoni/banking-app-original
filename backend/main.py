@@ -4,6 +4,41 @@ from fastapi import FastAPI, Request, HTTPException
 from supabase import create_client, Client
 from dotenv import load_dotenv
 import sentry_sdk
+from pydantic import BaseModel
+from backend.plaid_api import create_link_token, exchange_public_token, get_accounts, get_transactions
+
+class GetTransactionsRequest(BaseModel):
+    access_token: str
+
+@app.post("/api/plaid/transactions")
+async def get_plaid_transactions(request_body: GetTransactionsRequest):
+    try:
+        transactions = get_transactions(request_body.access_token)
+        return {"transactions": transactions}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+class GetAccountsRequest(BaseModel):
+    access_token: str
+
+@app.post("/api/plaid/accounts")
+async def get_plaid_accounts(request_body: GetAccountsRequest):
+    try:
+        accounts = get_accounts(request_body.access_token)
+        return {"accounts": accounts}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+class ExchangePublicTokenRequest(BaseModel):
+    public_token: str
+
+@app.post("/api/plaid/exchange_public_token")
+async def exchange_token(request_body: ExchangePublicTokenRequest):
+    try:
+        access_token = exchange_public_token(request_body.public_token)
+        return {"access_token": access_token}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 load_dotenv()
 
@@ -18,9 +53,13 @@ supabase_url = os.environ.get("SUPABASE_URL")
 supabase_key = os.environ.get("SUPABASE_KEY")
 supabase: Client = create_client(supabase_url, supabase_key)
 
+class CreateLinkTokenRequest(BaseModel):
+    user_id: str
+
 @app.get("/sentry-debug")
 async def trigger_error():
     division_by_zero = 1 / 0
+
 @app.get("/")
 def read_root():
     return {"Hello": "World"}
@@ -51,4 +90,12 @@ async def user_webhook(request: Request):
             raise HTTPException(status_code=500, detail=str(e))
 
     return {"status": "success"}
+
+@app.post("/api/plaid/create_link_token")
+async def get_link_token(request_body: CreateLinkTokenRequest):
+    try:
+        link_token = create_link_token(request_body.user_id)
+        return {"link_token": link_token}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
