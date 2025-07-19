@@ -9,7 +9,6 @@ import {
   TransferType,
 } from "plaid";
 
-import { plaidClient } from "../plaid";
 import { parseStringify } from "../utils";
 
 import { getTransactionsByBankId } from "./transaction.actions";
@@ -24,10 +23,14 @@ export const getAccounts = async ({ userId }: getAccountsProps) => {
     const accounts = await Promise.all(
       banks?.map(async (bank: Bank) => {
         // get each account info from plaid
-        const accountsResponse = await plaidClient.accountsGet({
-          access_token: bank.accessToken,
+        const accountsResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/plaid/accounts`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ access_token: bank.accessToken })
         });
-        const accountData = accountsResponse.data.accounts[0];
+        const accountData = await accountsResponse.json();
 
         // get institution info from plaid
         const institution = await getInstitution({
@@ -35,15 +38,15 @@ export const getAccounts = async ({ userId }: getAccountsProps) => {
         });
 
         const account = {
-          id: accountData.account_id,
-          availableBalance: accountData.balances.available!,
-          currentBalance: accountData.balances.current!,
+          id: accountData.accounts[0].account_id,
+          availableBalance: accountData.accounts[0].balances.available!,
+          currentBalance: accountData.accounts[0].balances.current!,
           institutionId: institution.institution_id,
-          name: accountData.name,
-          officialName: accountData.official_name,
-          mask: accountData.mask!,
-          type: accountData.type as string,
-          subtype: accountData.subtype! as string,
+          name: accountData.accounts[0].name,
+          officialName: accountData.accounts[0].official_name,
+          mask: accountData.accounts[0].mask!,
+          type: accountData.accounts[0].type as string,
+          subtype: accountData.accounts[0].subtype! as string,
           appwriteItemId: bank.$id,
           sharaebleId: bank.shareableId,
         };
@@ -156,13 +159,17 @@ export const getTransactions = async ({
   try {
     // Iterate through each page of new transaction updates for item
     while (hasMore) {
-      const response = await plaidClient.transactionsSync({
-        access_token: accessToken,
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/plaid/transactions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ access_token: accessToken })
       });
 
-      const data = response.data;
+      const data = await response.json();
 
-      transactions = response.data.added.map((transaction) => ({
+      transactions = data.transactions.map((transaction: any) => ({
         id: transaction.transaction_id,
         name: transaction.name,
         paymentChannel: transaction.payment_channel,

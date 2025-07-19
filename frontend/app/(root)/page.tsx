@@ -14,13 +14,12 @@ const Home = async () => {
 
     const databaseUser = await getUserInfo({ userId: clerkUser.id });
 
-    const loggedInUser = {
-        id: clerkUser.id,
-        firstName: clerkUser.firstName,
-        lastName: clerkUser.lastName,
-        email: clerkUser.emailAddresses[0]?.emailAddress,
-        dwollaCustomerId: databaseUser?.dwollaCustomerId, // Safely access properties
-        dwollaCustomerUrl: databaseUser?.dwollaCustomerUrl,
+    const loggedInUser: User = {
+        id: databaseUser.id,
+        clerkId: databaseUser.clerk_id,
+        firstName: databaseUser.first_name,
+        lastName: databaseUser.last_name,
+        email: databaseUser.email
     };
 
     return (

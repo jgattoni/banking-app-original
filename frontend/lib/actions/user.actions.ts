@@ -12,7 +12,7 @@ export const getUserInfo = async ({ userId }: { userId: string }) => {
       }
       throw new Error(`Error fetching user info: ${response.statusText}`);
     }
-    const userInfo = await response.json();
+    const userInfo: User = await response.json();
     return parseStringify(userInfo);
   } catch (error) {
     console.error('Error getting user info:', error);
@@ -20,7 +20,7 @@ export const getUserInfo = async ({ userId }: { userId: string }) => {
   }
 }
 
-export const createLinkToken = async (user: any) => {
+export const createLinkToken = async (user: User) => {
   try {
     const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/plaid/create_link_token`, {
       method: 'POST',
@@ -28,7 +28,7 @@ export const createLinkToken = async (user: any) => {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        user_id: user.id // Use the Clerk user ID
+        user_id: user.clerkId // Use the database clerk ID
       })
     })
     const data = await response.json();
@@ -41,7 +41,7 @@ export const createLinkToken = async (user: any) => {
 export const exchangePublicToken = async ({
   publicToken,
   user,
-}: { publicToken: string, user: any }) => {
+}: { publicToken: string, user: User }) => {
   try {
     // Exchange public token for access token and item ID
     const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/plaid/exchange_public_token`, {
