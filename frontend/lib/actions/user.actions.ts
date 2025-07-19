@@ -1,6 +1,7 @@
 'use server';
 
 import { parseStringify } from "../utils";
+import { revalidatePath } from "next/cache";
 
 export const getUserInfo = async ({ userId }: { userId: string }) => {
   try {
@@ -56,19 +57,50 @@ export const exchangePublicToken = async ({
     const { access_token, item_id } = data;
     
     // Get account information from Plaid using the access token
-    // const accountsResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/plaid/accounts`, {
-    //  method: 'POST',
-    //  headers: {
-    //    'Content-Type': 'application/json'
-    //  },
-    //  body: JSON.stringify({ access_token: accessToken })
-    // });
-    // const accountData = await accountsResponse.json();
+    const accountsResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/plaid/accounts`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ access_token: access_token })
+    });
+    const accountData = await accountsResponse.json();
 
-    // NOTE: The following logic for Dwolla and creating a bank account
-    // will need to be implemented in the backend.
+    const accounts = accountData.accounts;
 
-    // For now, we will just return a success message.
+    // Iterate through all accounts and save them to Supabase
+    for (const account of accounts) {
+        const bankAccountPayload = {
+            user_id: user.id, // Supabase user ID
+            access_token: access_token,
+            item_id: item_id,
+            account_id: account.account_id,
+            bank_name: account.name,
+            mask: account.mask,
+            official_name: account.official_name,
+            subtype: account.subtype,
+            account_type: account.type,
+            current_balance: account.balances.current,
+            available_balance: account.balances.available,
+            shareable_id: account.account_id, // You might want to generate a proper shareable ID
+            bank_type: "Plaid" // Set bank type to Plaid
+        };
+
+        // Save bank account to Supabase via backend
+        const saveBankResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/bank_accounts/create`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(bankAccountPayload)
+        });
+
+        if (!saveBankResponse.ok) {
+            throw new Error(`Failed to save bank account: ${saveBankResponse.statusText}`);
+        }
+    }
+
+    revalidatePath("/"); // Revalidate the home page to show new bank accounts
 
     return parseStringify({
       publicTokenExchange: "complete",

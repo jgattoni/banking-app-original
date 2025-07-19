@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 import sentry_sdk
 from pydantic import BaseModel
 from plaid_api import create_link_token, exchange_public_token, get_accounts, get_transactions, PlaidApiException
-from supabase_api import create_user_in_db, get_user_from_db
+from supabase_api import create_user_in_db, get_user_from_db, save_bank_account_to_db
 
 load_dotenv()
 app = FastAPI()
@@ -90,6 +90,43 @@ async def get_plaid_accounts(request_body: GetAccountsRequest):
 
 class ExchangePublicTokenRequest(BaseModel):
     public_token: str
+
+class CreateBankAccountRequest(BaseModel):
+    user_id: str
+    access_token: str
+    item_id: str
+    account_id: str
+    bank_name: str
+    mask: str
+    official_name: str
+    subtype: str
+    account_type: str
+    current_balance: float
+    available_balance: float
+    shareable_id: str
+    bank_type: str
+
+@app.post("/api/bank_accounts/create")
+async def create_bank_account(request_body: CreateBankAccountRequest):
+    try:
+        bank_account_data = save_bank_account_to_db(
+            user_id=request_body.user_id,
+            access_token=request_body.access_token,
+            item_id=request_body.item_id,
+            account_id=request_body.account_id,
+            bank_name=request_body.bank_name,
+            mask=request_body.mask,
+            official_name=request_body.official_name,
+            subtype=request_body.subtype,
+            account_type=request_body.account_type,
+            current_balance=request_body.current_balance,
+            available_balance=request_body.available_balance,
+            shareable_id=request_body.shareable_id,
+            bank_type=request_body.bank_type
+        )
+        return bank_account_data
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/plaid/exchange_public_token")
 async def exchange_token(request_body: ExchangePublicTokenRequest):

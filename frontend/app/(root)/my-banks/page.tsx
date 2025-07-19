@@ -10,8 +10,8 @@ const MyBanks = () => {
             </div>
             <div className="flex flex-col gap-4 p-4">
                 <Link href="/my-banks/connect">
-                    <Button className="primary-button">
-                        Connect to my bank using Plaid
+                    <Button className="plaidlink-primary">
+                        Connect to a bank using Plaid
                     </Button>
                 </Link>
                 {/* Add other bank connection options here */}

@@ -74,7 +74,8 @@ def get_accounts(access_token: str):
         access_token=access_token
     )
     response = client.accounts_get(request)
-    return response['accounts']
+    # Convert Plaid Account objects to dictionaries for JSON serialization
+    return [account.to_dict() for account in response['accounts']]
 
 def get_transactions(access_token: str):
     # Set a reasonable date range for transactions (e.g., last 30 days)
