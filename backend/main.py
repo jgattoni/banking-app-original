@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 import sentry_sdk
 from pydantic import BaseModel
 from plaid_api import create_link_token, exchange_public_token, get_accounts, get_transactions, PlaidApiException
+from supabase_api import create_user_in_db, get_user_from_db
 
 load_dotenv()
 app = FastAPI()
@@ -18,10 +19,6 @@ sentry_sdk.init(
     dsn=os.environ.get("SENTRY_DSN"),
     traces_sample_rate=1.0,
 )
-
-supabase_url = os.environ.get("SUPABASE_URL")
-supabase_key = os.environ.get("SUPABASE_KEY")
-supabase: Client = create_client(supabase_url, supabase_key)
 
 class CreateLinkTokenRequest(BaseModel):
     user_id: str
@@ -47,12 +44,7 @@ async def user_webhook(request: Request):
         last_name = user_data.get("last_name")
 
         try:
-            response = supabase.table("users").insert({
-                "clerk_id": clerk_id,
-                "email": email,
-                "first_name": first_name,
-                "last_name": last_name
-            }).execute()
+            create_user_in_db(clerk_id, email, first_name, last_name)
 
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
@@ -62,10 +54,9 @@ async def user_webhook(request: Request):
 @app.get("/api/users/{clerk_id}")
 async def get_user_by_clerk_id(clerk_id: str):
     try:
-        response = supabase.table("users").select("*").eq("clerk_id", clerk_id).single().execute()
-        return response.data
+        user_data = get_user_from_db(clerk_id)
+        return user_data
     except Exception as e:
-        # This will catch the error if no user is found (or other DB errors)
         raise HTTPException(status_code=404, detail="User not found")
 
 @app.post("/api/plaid/create_link_token")
@@ -103,7 +94,7 @@ class ExchangePublicTokenRequest(BaseModel):
 @app.post("/api/plaid/exchange_public_token")
 async def exchange_token(request_body: ExchangePublicTokenRequest):
     try:
-        access_token = exchange_public_token(request_body.public_token)
-        return {"access_token": access_token}
+        response_data = exchange_public_token(request_body.public_token)
+        return {"access_token": response_data["access_token"], "item_id": response_data["item_id"]}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

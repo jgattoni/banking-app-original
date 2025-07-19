@@ -41,7 +41,7 @@ export const createLinkToken = async (user: User) => {
 export const exchangePublicToken = async ({
   publicToken,
   user,
-}: { publicToken: string, user: User }) => {
+}: exchangePublicTokenProps) => {
   try {
     // Exchange public token for access token and item ID
     const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/plaid/exchange_public_token`, {
@@ -53,24 +53,27 @@ export const exchangePublicToken = async ({
     });
 
     const data = await response.json();
-    const accessToken = data.access_token;
+    const { access_token, item_id } = data;
     
     // Get account information from Plaid using the access token
-    const accountsResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/plaid/accounts`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ access_token: accessToken })
-    });
-    const accountData = await accountsResponse.json();
+    // const accountsResponse = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/plaid/accounts`, {
+    //  method: 'POST',
+    //  headers: {
+    //    'Content-Type': 'application/json'
+    //  },
+    //  body: JSON.stringify({ access_token: accessToken })
+    // });
+    // const accountData = await accountsResponse.json();
 
     // NOTE: The following logic for Dwolla and creating a bank account
     // will need to be implemented in the backend.
+
     // For now, we will just return a success message.
 
     return parseStringify({
       publicTokenExchange: "complete",
+      accessToken: access_token,
+      itemId: item_id,
     });
   } catch (error) {
     console.error("An error occurred while creating exchanging token:", error);

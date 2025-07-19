@@ -64,7 +64,10 @@ def exchange_public_token(public_token: str):
         public_token=public_token
     )
     response = client.item_public_token_exchange(request)
-    return response['access_token']
+    return {
+        "access_token": response['access_token'],
+        "item_id": response['item_id']
+    }
 
 def get_accounts(access_token: str):
     request = AccountsGetRequest(
