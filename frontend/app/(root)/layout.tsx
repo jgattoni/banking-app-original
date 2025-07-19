@@ -2,12 +2,31 @@ import Sidebar from "@/components/Sidebar";
 import MobileNav from "@/components/MobileNav";
 import Image from "next/image";
 import { UserButton } from "@clerk/nextjs";
+import { currentUser } from "@clerk/nextjs/server";
+import { getUserInfo } from "@/lib/actions/user.actions";
+import { redirect } from "next/navigation";
+import { UserProvider } from "@/components/UserProvider";
 
 export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+    const clerkUser = await currentUser();
+    if (!clerkUser) {
+        redirect("/sign-in");
+    }
+
+    const databaseUser = await getUserInfo({ userId: clerkUser.id });
+
+    const loggedInUser: User = {
+        id: databaseUser.id,
+        clerkId: databaseUser.clerk_id,
+        firstName: databaseUser.first_name,
+        lastName: databaseUser.last_name,
+        email: databaseUser.email
+    };
+
   return (
     <main className="flex h-screen w-full font-inter">
         <Sidebar />
@@ -24,7 +43,9 @@ export default async function RootLayout({
                   <MobileNav  />
               </div>
           </div>
-        {children}
+        <UserProvider user={loggedInUser}>
+            {children}
+        </UserProvider>
         </div>
     </main>
   );

@@ -1,12 +1,17 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
 import BankCard from "@/components/BankCard";
 import {
   UserButton,
 } from '@clerk/nextjs'
+import { useUser } from "@/components/UserProvider";
 
-const RightSidebar = ({user, transactions, banks}:
+const RightSidebar = ({transactions, banks}:
 RightSidebarProps) => {
+    const loggedInUser = useUser();
+
     return (
         <aside className={"right-sidebar"}>
             <section className={"flex flex-col pb-8"}>
@@ -23,8 +28,8 @@ RightSidebarProps) => {
                           }}/>
                     </div>
                     <div className={"profile-details"}>
-                        <h1 className={"profile-name"}>{user.firstName} {user.lastName}</h1>
-                        <p className={"profile-email"}>{user.email}</p>
+                        <h1 className={"profile-name"}>{loggedInUser?.firstName} {loggedInUser?.lastName}</h1>
+                        <p className={"profile-email"}>{loggedInUser?.email}</p>
                     </div>
                 </div>
             </section>
@@ -47,7 +52,7 @@ RightSidebarProps) => {
                              <BankCard
                                  key={banks[0].id}
                                  account={banks[0]}
-                                 userName={`${user.firstName} ${user.lastName}`}
+                                 userName={`${loggedInUser?.firstName} ${loggedInUser?.lastName}`}
                                  showBalance={false}
                              />
                         </div>
@@ -56,7 +61,7 @@ RightSidebarProps) => {
                                 <BankCard
                                      key={banks[1].id}
                                      account={banks[1]}
-                                     userName={`${user.firstName} ${user.lastName}`}
+                                     userName={`${loggedInUser?.firstName} ${loggedInUser?.lastName}`}
                                      showBalance={false}
                                 />
                             </div>
