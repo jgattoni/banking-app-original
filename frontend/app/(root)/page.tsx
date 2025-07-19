@@ -3,48 +3,25 @@ import { redirect } from "next/navigation";
 import HeaderBox from "@/components/HeaderBox";
 import TotalBalanceBox from "@/components/TotalBalanceBox";
 import RightSidebar from "@/components/RightSidebar";
-import { usePlaidLink } from 'react-plaid-link';
-import { useEffect, useState } from 'react';
-import { createLinkToken } from '../../lib/plaid';
+import PlaidLink from "@/components/PlaidLink";
+import { getUserInfo } from "@/lib/actions/user.actions";
 
 const Home = async () => {
-    const user = await currentUser();
-    if (!user) {
+    const clerkUser = await currentUser();
+    if (!clerkUser) {
         redirect("/sign-in");
     }
 
-    const [linkToken, setLinkToken] = useState<string | null>(null);
+    const databaseUser = await getUserInfo({ userId: clerkUser.id });
 
-    useEffect(() => {
-        const getLinkToken = async () => {
-            if (user?.id) {
-                const token = await createLinkToken(user.id);
-                setLinkToken(token);
-            }
-        };
-        getLinkToken();
-    }, [user]);
-
-    const { open, ready } = usePlaidLink({
-        token: linkToken,
-        onSuccess: async (public_token, metadata) => {
-            try {
-                const accessToken = await exchangePublicToken(public_token);
-                console.log('Access Token:', accessToken);
-
-                const accounts = await getAccounts(accessToken);
-                console.log('Accounts:', accounts);
-
-                const transactions = await getTransactions(accessToken);
-                console.log('Transactions:', transactions);
-            } catch (error) {
-                console.error('Error in Plaid Link onSuccess:', error);
-            }
-        },
-        onExit: (err, metadata) => {
-            console.error('Plaid Link exited:', err, metadata);
-        },
-    });
+    const loggedInUser = {
+        id: clerkUser.id,
+        firstName: clerkUser.firstName,
+        lastName: clerkUser.lastName,
+        email: clerkUser.emailAddresses[0]?.emailAddress,
+        dwollaCustomerId: databaseUser?.dwollaCustomerId, // Safely access properties
+        dwollaCustomerUrl: databaseUser?.dwollaCustomerUrl,
+    };
 
     return (
         <section className="home">
@@ -53,7 +30,7 @@ const Home = async () => {
                     <HeaderBox
                       type="greeting"
                       title="Welcome"
-                      user={user.firstName || 'Guest'}
+                      user={loggedInUser.firstName || 'Guest'}
                       subtext={"Access and manage your account and transactions efficiently."}
                     />
                     <TotalBalanceBox
@@ -62,17 +39,11 @@ const Home = async () => {
                     totalCurrentBalance={1250.35}
                     />
                 </header>
-                <button onClick={() => open()} disabled={!ready}>
-                    Connect Bank
-                </button>
+                <PlaidLink user={loggedInUser} variant="primary" />
                 RECENT TRANSACTIONS
             </div>
             <RightSidebar
-                user={{
-                    firstName: user.firstName,
-                    lastName: user.lastName,
-                    email: user.emailAddresses?.[0]?.emailAddress || "",
-                }}
+                user={loggedInUser}
                 transactions={[]}
                 banks={[{ currentBalance: 123.50},{currentBalance: 500.00}]}
             />
