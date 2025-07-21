@@ -2,7 +2,7 @@
 import { type ClassValue, clsx } from "clsx";
 import qs from "query-string";
 import { twMerge } from "tailwind-merge";
-/* import { z } from "zod"; */
+import { z } from "zod";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -66,8 +66,8 @@ export const formatDateTime = (dateString: Date) => {
   };
 };
 
-export function formatAmount(amount: number): string {
-  const formatter = new Intl.NumberFormat("us-US", {
+export function formatAmount(amount: number, locale: string = "en-US"): string {
+  const formatter = new Intl.NumberFormat(locale, {
     style: "currency",
     currency: "CHF",
     minimumFractionDigits: 2,

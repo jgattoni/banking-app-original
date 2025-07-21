@@ -16,7 +16,6 @@
     "chart.js": "^4.5.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "dwolla-v2": "^3.4.0",
     "lucide-react": "^0.525.0",
     "next": "15.3.4",
     "query-string": "^9.2.1",
@@ -25,7 +24,8 @@
     "react-countup": "^6.5.3",
     "react-dom": "^19.0.0",
     "react-plaid-link": "^4.0.1",
-    "tailwind-merge": "^3.3.1"
+    "tailwind-merge": "^3.3.1",
+    "zod": "^4.0.5"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

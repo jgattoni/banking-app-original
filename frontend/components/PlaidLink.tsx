@@ -37,15 +37,15 @@ const PlaidLink = ({user, variant, accessToken}: PlaidLinkProps) => {
                 <Button
                     onClick={() => open()}
                     disabled={!ready}
-                    className={"plaidlink-primary"}>
+                    variant="default">
                     Connect Bank
                 </Button>
                 ): variant === "ghost" ? (
-                <Button className={"plaidlink-ghost"}>
+                <Button variant="ghost">
                     Connect Bank
                 </Button>
                 ): (
-                <Button className={"plaidlink-secondary"}>
+                <Button variant="secondary">
                     Connect Bank
                 </Button>
                 )

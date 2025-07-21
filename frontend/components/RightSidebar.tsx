@@ -13,11 +13,11 @@ RightSidebarProps) => {
     const loggedInUser = useUser();
 
     return (
-        <aside className={"right-sidebar"}>
+        <aside className={"h-screen max-h-screen flex-col border-l border-gray-200 xl:flex w-[355px] xl:overflow-y-auto hidden"}>
             <section className={"flex flex-col pb-8"}>
-                <div className={"profile-banner"}/>
-                <div className={"profile"}>
-                    <div className={"profile-img"}>
+                <div className={"h-[120px] w-full bg-gradient-mesh bg-cover bg-no-repeat"}/>
+                <div className={"relative flex px-6 max-xl:justify-center"}>
+                    <div className={"absolute -top-8 rounded-full size-24 bg-gray-100 border-8 border-white p-2 shadow-profile flex-center"}>
                         <UserButton appearance={{
                             elements: {
                                 userButtonAvatarBox: {
@@ -27,15 +27,15 @@ RightSidebarProps) => {
                             },
                           }}/>
                     </div>
-                    <div className={"profile-details"}>
-                        <h1 className={"profile-name"}>{loggedInUser?.firstName} {loggedInUser?.lastName}</h1>
-                        <p className={"profile-email"}>{loggedInUser?.email}</p>
+                    <div className={"flex flex-col pt-24"}>
+                        <h1 className={"text-lg font-semibold text-gray-900"}>{loggedInUser?.firstName} {loggedInUser?.lastName}</h1>
+                        <p className={"text-sm font-normal text-gray-600"}>{loggedInUser?.email}</p>
                     </div>
                 </div>
             </section>
-            <section className={"banks"}>
+            <section className={"flex flex-col justify-between gap-8 px-6 py-8"}>
                 <div className={"flex w-full justify-between"}>
-                    <h2 className={"header-2"}>My Banks</h2>
+                    <h2 className={"text-xl font-bold text-gray-900"}>My Banks</h2>
                     <Link href={"/"} className={"flex gap-2"}>
                         <Image
                             src={"icons/plus.svg"}
@@ -43,7 +43,7 @@ RightSidebarProps) => {
                             height={20}
                             alt={"plus"}
                         />
-                        <h2 className={"text-14 font-semibold text-gray-600"}>Add Bank</h2>
+                        <h2 className={"text-sm font-semibold text-gray-600"}>Add Bank</h2>
                     </Link>
                 </div>
                 {banks?.length > 0 &&

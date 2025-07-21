@@ -8,6 +8,11 @@ const ListAccounts = () => {
     const loggedInUser = useUser();
     const [banks, setBanks] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [isClient, setIsClient] = useState(false);
+
+    useEffect(() => {
+        setIsClient(true);
+    }, []);
 
     useEffect(() => {
         const fetchUserBanks = async () => {
@@ -50,10 +55,12 @@ const ListAccounts = () => {
             }
         };
 
-        fetchUserBanks();
-    }, [loggedInUser]);
+        if (isClient) {
+            fetchUserBanks();
+        }
+    }, [loggedInUser, isClient]);
 
-    if (loading) {
+    if (!isClient || loading) {
         return <div>Loading accounts...</div>;
     }
 

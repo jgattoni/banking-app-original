@@ -7,11 +7,11 @@ const MyBanks = () => {
     return (
         <section className="flex size-full flex-col">
             <div className="my-banks-header">
-                <h1 className="header-2">My Banks</h1>
+                <h1 className="text-[18px] leading-[22px] font-semibold text-gray-900">My Banks</h1>
             </div>
             <div className="flex flex-col gap-4 p-4">
                 <Link href="/my-banks/connect">
-                    <Button className="plaidlink-primary">
+                    <Button variant="default">
                         Connect a New Bank with Plaid
                     </Button>
                 </Link>
