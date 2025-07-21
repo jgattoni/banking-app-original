@@ -1,15 +1,32 @@
 
 import os
 from fastapi import FastAPI, Request, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from supabase import create_client, Client
 from dotenv import load_dotenv
 import sentry_sdk
+import traceback
 from pydantic import BaseModel
-from plaid_api import create_link_token, exchange_public_token, get_accounts, get_transactions, PlaidApiException
-from supabase_api import create_user_in_db, get_user_from_db, save_bank_account_to_db
+from typing import Optional
+from plaid_api import create_link_token, exchange_public_token, get_accounts, get_transactions, get_institution_by_id, PlaidApiException
+from supabase_api import create_user_in_db, get_user_from_db, save_bank_account_to_db, \
+    get_bank_accounts_by_user_and_institution, get_bank_account_by_user_item_and_account_id, \
+    get_bank_accounts_by_user_id
 
 load_dotenv()
 app = FastAPI()
+
+origins = [
+    "http://localhost:3000",  # Next.js frontend
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class GetTransactionsRequest(BaseModel):
     access_token: str
@@ -22,6 +39,7 @@ sentry_sdk.init(
 
 class CreateLinkTokenRequest(BaseModel):
     user_id: str
+    access_token: Optional[str] = None
 
 @app.get("/sentry-debug")
 async def trigger_error():
@@ -62,7 +80,7 @@ async def get_user_by_clerk_id(clerk_id: str):
 @app.post("/api/plaid/create_link_token")
 async def get_link_token(request_body: CreateLinkTokenRequest):
     try:
-        link_token = create_link_token(request_body.user_id)
+        link_token = create_link_token(request_body.user_id, request_body.access_token)
         return {"link_token": link_token}
     except PlaidApiException as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -84,7 +102,7 @@ class GetAccountsRequest(BaseModel):
 async def get_plaid_accounts(request_body: GetAccountsRequest):
     try:
         accounts = get_accounts(request_body.access_token)
-        return {"accounts": accounts}
+        return accounts
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -105,10 +123,55 @@ class CreateBankAccountRequest(BaseModel):
     available_balance: float
     shareable_id: str
     bank_type: str
+    institution_id: str # New field
+
+@app.get("/api/institutions/{institution_id}")
+async def get_institution_details(institution_id: str):
+    try:
+        institution = get_institution_by_id(institution_id)
+        return institution
+    except PlaidApiException as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/bank_accounts/{clerk_id}")
+async def get_user_bank_accounts(clerk_id: str):
+    try:
+        # First, get the internal user ID from the clerk_id
+        user = get_user_from_db(clerk_id)
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        # Then, use the internal user ID to get bank accounts
+        bank_accounts = get_bank_accounts_by_user_id(user['id'])
+        return bank_accounts
+    except Exception as e:
+        print(f"----------- UNCAUGHT EXCEPTION IN /api/bank_accounts/{clerk_id} -----------")
+        traceback.print_exc()
+        print("--------------------------------------------------------------------------")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/bank_accounts/check_institution/{user_id}/{institution_id}")
+async def check_institution_linked(user_id: str, institution_id: str):
+    try:
+        existing_banks = get_bank_accounts_by_user_and_institution(user_id, institution_id)
+        return {"is_linked": bool(existing_banks)}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/bank_accounts/create")
 async def create_bank_account(request_body: CreateBankAccountRequest):
     try:
+        # Check for exact duplicate account (user_id, item_id, account_id)
+        existing_account = get_bank_account_by_user_item_and_account_id(
+            request_body.user_id,
+            request_body.item_id,
+            request_body.account_id
+        )
+        if existing_account:
+            raise HTTPException(status_code=409, detail="This specific bank account is already linked.")
+
         bank_account_data = save_bank_account_to_db(
             user_id=request_body.user_id,
             access_token=request_body.access_token,
@@ -122,10 +185,15 @@ async def create_bank_account(request_body: CreateBankAccountRequest):
             current_balance=request_body.current_balance,
             available_balance=request_body.available_balance,
             shareable_id=request_body.shareable_id,
-            bank_type=request_body.bank_type
+            bank_type=request_body.bank_type,
+            institution_id=request_body.institution_id # Pass new field
         )
         return bank_account_data
     except Exception as e:
+        print("----------- UNCAUGHT EXCEPTION IN /api/bank_accounts/create -----------")
+        traceback.print_exc()
+        print("--------------------------------------------------------------------------")
+        raise HTTPException(status_code=500, detail=str(e))
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/plaid/exchange_public_token")

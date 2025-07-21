@@ -44,7 +44,8 @@ def save_bank_account_to_db(
     current_balance: float,
     available_balance: float,
     shareable_id: str,
-    bank_type: str
+    bank_type: str,
+    institution_id: str # New parameter
 ):
     try:
         response = supabase.table("banks").insert({
@@ -60,7 +61,8 @@ def save_bank_account_to_db(
             "current_balance": current_balance,
             "available_balance": available_balance,
             "shareable_id": shareable_id,
-            "bank_type": bank_type
+            "bank_type": bank_type,
+            "institution_id": institution_id # New column
         }).execute()
         if response.data:
             return response.data
@@ -68,3 +70,24 @@ def save_bank_account_to_db(
             raise HTTPException(status_code=500, detail="Failed to save bank account to Supabase: No data returned.")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error saving bank account to Supabase: {str(e)}")
+
+def get_bank_accounts_by_user_and_institution(user_id: str, institution_id: str):
+    try:
+        response = supabase.table("banks").select("*").eq("user_id", user_id).eq("institution_id", institution_id).execute()
+        return response.data
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching bank accounts: {str(e)}")
+
+def get_bank_account_by_user_item_and_account_id(user_id: str, item_id: str, account_id: str):
+    try:
+        response = supabase.table("banks").select("*").eq("user_id", user_id).eq("item_id", item_id).eq("account_id", account_id).execute()
+        return response.data
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching bank account: {str(e)}")
+
+def get_bank_accounts_by_user_id(user_id: str):
+    try:
+        response = supabase.table("banks").select("*").eq("user_id", user_id).execute()
+        return response.data
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching bank accounts for user: {str(e)}")

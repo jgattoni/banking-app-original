@@ -1,6 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import ListAccounts from '@/components/ListAccounts'; // Import the new component
 
 const MyBanks = () => {
     return (
@@ -11,10 +12,10 @@ const MyBanks = () => {
             <div className="flex flex-col gap-4 p-4">
                 <Link href="/my-banks/connect">
                     <Button className="plaidlink-primary">
-                        Connect to a bank using Plaid
+                        Connect a New Bank with Plaid
                     </Button>
                 </Link>
-                {/* Add other bank connection options here */}
+                <ListAccounts /> {/* Add the new component here */}
             </div>
         </section>
     )

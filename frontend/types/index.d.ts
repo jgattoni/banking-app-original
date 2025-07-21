@@ -175,6 +175,7 @@ declare interface PaginationProps {
 declare interface PlaidLinkProps {
   user: User;
   variant?: "primary" | "ghost";
+  accessToken?: string;
 }
 
 // declare type User = sdk.Models.Document & {

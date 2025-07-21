@@ -8,6 +8,7 @@ from plaid.model.link_token_create_request_user import LinkTokenCreateRequestUse
 from plaid.model.item_public_token_exchange_request import ItemPublicTokenExchangeRequest
 from plaid.model.accounts_get_request import AccountsGetRequest
 from plaid.model.transactions_get_request import TransactionsGetRequest
+from plaid.model.institutions_get_by_id_request import InstitutionsGetByIdRequest
 from datetime import date, timedelta
 from dotenv import load_dotenv
 load_dotenv()
@@ -43,7 +44,7 @@ client = plaid_api.PlaidApi(api_client)
 class PlaidApiException(Exception):
     pass
 
-def create_link_token(user_id: str):
+def create_link_token(user_id: str, access_token: str = None):
     try:
         request = LinkTokenCreateRequest(
             user=LinkTokenCreateRequestUser(client_user_id=user_id),
@@ -51,6 +52,7 @@ def create_link_token(user_id: str):
             products=[Products('auth')],
             country_codes=[CountryCode('US')],
             language="en",   # Language for the Link flow
+            access_token=access_token if access_token else None # Include access_token for update mode
         )
         response = client.link_token_create(request)
         print(f"Successfully created Link Token: {response.link_token}")
@@ -74,8 +76,10 @@ def get_accounts(access_token: str):
         access_token=access_token
     )
     response = client.accounts_get(request)
-    # Convert Plaid Account objects to dictionaries for JSON serialization
-    return [account.to_dict() for account in response['accounts']]
+    return {
+        "accounts": [account.to_dict() for account in response['accounts']],
+        "item": response['item'].to_dict()
+    }
 
 def get_transactions(access_token: str):
     # Set a reasonable date range for transactions (e.g., last 30 days)
@@ -89,3 +93,21 @@ def get_transactions(access_token: str):
     )
     response = client.transactions_get(request)
     return response['transactions']
+
+def get_institution_by_id(institution_id: str):
+    try:
+        request = InstitutionsGetByIdRequest(
+            institution_id=institution_id,
+            country_codes=[CountryCode('US')],
+            options={
+                "include_optional_metadata": True
+            }
+        )
+        response = client.institutions_get_by_id(request)
+        return response['institution'].to_dict()
+    except plaid.ApiException as e:
+        print(f"Plaid API Error fetching institution {institution_id}: {e.body}")
+        raise PlaidApiException(e.body)
+    except Exception as e:
+        print(f"Unexpected error fetching institution {institution_id}: {e}")
+        raise e

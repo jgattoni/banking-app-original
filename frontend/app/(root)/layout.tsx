@@ -20,7 +20,7 @@ export default async function RootLayout({
     const databaseUser = await getUserInfo({ userId: clerkUser.id });
 
     const loggedInUser: User = {
-        id: databaseUser.id,
+        id: databaseUser.id, // This is the Supabase ID
         clerkId: databaseUser.clerk_id,
         firstName: databaseUser.first_name,
         lastName: databaseUser.last_name,

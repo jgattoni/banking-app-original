@@ -2,24 +2,26 @@
 
 import {PlaidLinkOnSuccess, PlaidLinkOptions, usePlaidLink} from 'react-plaid-link';
 import {useCallback, useEffect, useState} from 'react';
+import { useRouter } from 'next/navigation';
 import {Button} from "@/components/ui/button";
-import {createLinkToken, exchangePublicToken} from "@/lib/actions/user.actions";
+import {createLinkToken, exchangePublicToken, savePlaidAccounts} from "@/lib/actions/user.actions";
 
-const PlaidLink = ({user, variant}: PlaidLinkProps) => {
+const PlaidLink = ({user, variant, accessToken}: PlaidLinkProps) => {
+    const router = useRouter();
     const [token, setToken] = useState("");
 
     useEffect(() => {
         const getLinkToken = async () => {
-            const data = await createLinkToken(user);
+            const data = await createLinkToken(user, accessToken);
             setToken(data?.linkToken);
         }
         getLinkToken()
-    }, [user])
+    }, [user, accessToken])
 
     const onSuccess = useCallback<PlaidLinkOnSuccess>(async (public_token: string) => {
-        await exchangePublicToken({
-            publicToken: public_token,
-            user})
+        const { accessToken, itemId } = await exchangePublicToken({ publicToken: public_token });
+        await savePlaidAccounts({ accessToken, itemId, user });
+        router.push("/my-banks"); // Redirect to the My Banks page
         }, [user])
 
     const config: PlaidLinkOptions = {
