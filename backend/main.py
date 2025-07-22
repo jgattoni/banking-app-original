@@ -17,7 +17,7 @@ load_dotenv()
 app = FastAPI()
 
 origins = [
-    "http://localhost:3000",  # Next.js frontend
+    "http://localhost:5173",  # Next.js frontend
 ]
 
 app.add_middleware(
